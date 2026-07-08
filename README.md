@@ -12,18 +12,18 @@ The system has two layers. **Structured memory** (the prompt): MAX 2,200 chars o
 
 ```
                          ┌──────────────────────────────────┐
-                         │          AGENT RECEIVES           │
-                         │            A QUESTION              │
+                         │          AGENT RECEIVES          │
+                         │            A QUESTION            │
                          └────────────────┬─────────────────┘
                                           │
                          ┌────────────────▼─────────────────┐
-                         │     STRUCTURED MEMORY (PROMPT)    │
-                         │                                    │
-                         │  "Is this a behavioral rule?"      │
-                         │  • who is the primary human        │
-                         │  • communication style             │
-                         │  • security constraints            │
-                         │  MAX 2,200 chars                  │
+                         │     STRUCTURED MEMORY (PROMPT)   │
+                         │                                  │
+                         │  "Is this a behavioral rule?"    │
+                         │  • who is the primary human      │
+                         │  • communication style           │
+                         │  • security constraints          │
+                         │  MAX 2,200 chars                 │
                          └────────────────┬─────────────────┘
                                           │
                               ┌───────────┴───────────┐
@@ -31,29 +31,29 @@ The system has two layers. **Structured memory** (the prompt): MAX 2,200 chars o
                           YES (rule)             NO (fact)
                               │                       │
                               │            ┌──────────▼──────────┐
-                              │            │  VECTOR ARCHIVE      │
-                              │            │  (THE BRAIN)         │
-                              │            │                      │
-                              │            │  Search first for:   │
-                              │            │  • people            │
-                              │            │  • projects          │
-                              │            │  • relationships     │
-                              │            │  • past decisions    │
-                              │            │  • preferences       │
-                              │            │  • contacts          │
+                              │            │  VECTOR ARCHIVE     │
+                              │            │  (THE BRAIN)        │
+                              │            │                     │
+                              │            │  Search first for:  │
+                              │            │  • people           │
+                              │            │  • projects         │
+                              │            │  • relationships    │
+                              │            │  • past decisions   │
+                              │            │  • preferences      │
+                              │            │  • contacts         │
                               │            └──────────┬──────────┘
                               │                       │
                               │            ┌──────────▼──────────┐
-                              │            │  SMART BACKEND       │
-                              │            │                      │
-                              │            │  1. Hash search      │
-                              │            │     (fast, keyword)  │
-                              │            │        │             │
-                              │            │   score < 0.4?       │
-                              │            │        │ YES         │
-                              │            │        ▼             │
-                              │            │  2. Semantic fallback │
-                              │            │  (understands meaning)│
+                              │            │  SMART BACKEND      │
+                              │            │                     │
+                              │            │  1. Hash search     │
+                              │            │     (fast, keyword) │
+                              │            │        │            │
+                              │            │   score < 0.4?      │
+                              │            │        │ YES        │
+                              │            │        ▼            │
+                              │            │ 2.Semantic fallback │
+                              │            │(understands meaning)│
                               │            └──────────┬──────────┘
                               │                       │
                               └───────────┬───────────┘
