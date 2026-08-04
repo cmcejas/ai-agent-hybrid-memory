@@ -243,7 +243,29 @@ Create a cron job with:
 
     This runs silently. Do NOT send messages to the user.
 
-### Action 5: Create the self-improving agent skill
+### Action 5: Create the weekly agent cleanup cron job
+
+Create a cron job with:
+
+- **Name:** Weekly agent cleanup
+- **Schedule:** `0 3 * * 0` (every Sunday at 3am)
+- **Repeat:** forever
+- **Deliver:** local (silent unless there is a user-visible issue)
+- **Enabled toolsets:** terminal, file, session_search
+- **Prompt (exact):**
+
+    Weekly agent cleanup. Keep the agent healthy without inventing work.
+
+    1. Review `~/.hermes/.learnings/` for repeated failures and corrections. Promote only durable behavioral rules. Keep project facts and one-off history in vector memory.
+    2. Review structured memory for stale or redundant factual entries. Keep it lean. Do not overwrite unrelated user preferences or security rules.
+    3. Check installed skills for instructions contradicted by recent learnings. Patch only clearly stale or incorrect instructions.
+    4. Audit cron jobs and recent outputs. Flag failed jobs, stale one-shot reminders, duplicate schedules, and repeated delivery errors. Do not create, remove, pause, or reschedule jobs without direct user approval.
+    5. Delete only clearly disposable temporary artifacts: completed one-off scripts, stale test caches, and old generated files that are not user-facing deliverables. Never delete credentials, `.env` files, notes, active session files, or recent outputs.
+    6. Append a dated summary to `~/.hermes/workspace/weekly-cleanup-log.md`.
+
+    If there is no user-visible issue, respond with exactly `[SILENT]`. Do not send messages yourself; cron delivery handles it.
+
+### Action 6: Create the self-improving agent skill
 
 Create `~/.hermes/skills/productivity/self-improving-agent/SKILL.md` with this content:
 
@@ -281,16 +303,17 @@ Create `~/.hermes/skills/productivity/self-improving-agent/SKILL.md` with this c
 
 After completing all actions, run the verification step below. Then confirm completion to the user.
 
-### Action 6: Verification
+### Action 7: Verification
 
-Read back every file you wrote or modified in Actions 0-5 and confirm:
+Read back every file you wrote or modified in Actions 0-6 and confirm:
 1. `~/.hermes/config.yaml` — the `memory:` block exists with `provider: holographic`, `vector.enabled: true`, and `backend: smart`
 2. `~/.hermes/SOUL.md` — the `## Memory Architecture` section exists with all sub-sections (Structured Memory, Vector Memory Archive, Fact Store, Session Search, Operational Details)
 3. `~/.hermes/memories/MEMORY.md` — exists and contains the 4 memory architecture rules plus Memory Usage Rules
 4. Cron job "Nightly memory maintenance" — exists and is enabled with schedule `0 2 * * *`
-5. `~/.hermes/skills/productivity/self-improving-agent/SKILL.md` — exists and contains the memory search rule
+5. Cron job "Weekly agent cleanup" — exists and is enabled with schedule `0 3 * * 0`
+6. `~/.hermes/skills/productivity/self-improving-agent/SKILL.md` — exists and contains the memory search rule
 
-If any step failed during Actions 0-5, report what failed and what you did to recover. Do not silently skip failed steps.
+If any step failed during Actions 0-6, report what failed and what you did to recover. Do not silently skip failed steps.
 
 ---
 
