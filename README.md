@@ -92,7 +92,7 @@ You have a bias toward answering from what is already in your prompt. You skip t
 
 **Structured Memory (the Prompt):** MAX 2,200 chars. Always in the system prompt. Only behavioral rules — style, security, who is the primary human. NOT a knowledge base. Incomplete by design.
 
-**Vector Memory Archive (the Brain):** Your primary recall layer. Searchable by meaning. Holds people, projects, decisions, preferences, everything that changes. Use local SQLite with a `smart` backend: hash search first (instant, keyword), semantic fallback via sentence-transformers when hash score < 0.4 (understands meaning, handles paraphrasing). Local is better: zero API cost, no network latency, works offline.
+**Vector Memory Archive (the Brain):** Your primary recall layer. Searchable by meaning. Holds people, projects, decisions, preferences, everything that changes. Use local SQLite with a `smart` backend: hash search first (instant, keyword), then semantic fallback with `BAAI/bge-small-en-v1.5` when hash score < 0.4. BGE-small is a local 384-dimensional retrieval model: roughly 130 MB, practical on a Raspberry Pi, and materially stronger for retrieval than the older MiniLM-L6 baseline. Local is better: zero API cost, no network latency, works offline.
 
 **The single most important rule in this entire setup.** Before answering ANY question about people, projects, relationships, contacts, past decisions, preferences, warm leads, follow-ups, outreach history, or "who said what" — call `vector_memory(action="search")` FIRST. Not "if I feel like it." Not "if I don't already know." FIRST. You will fight this instinct. Encode it everywhere. Say it in the overview (you just read it), say it in your SOUL.md write, say it in MEMORY.md, say it in the cron prompt you create. Redundancy is the feature.
 
@@ -121,7 +121,7 @@ Write this to `~/.hermes/config.yaml`. If the file already exists, replace the e
         enabled: true
         backend: smart
         db_path: $HERMES_HOME/vector_memory/memory.sqlite3
-        model: sentence-transformers/all-MiniLM-L6-v2
+        model: BAAI/bge-small-en-v1.5
         min_score: 0.4
         max_chars_per_item: 700
         max_turn_chars: 6000
@@ -129,6 +129,12 @@ Write this to `~/.hermes/config.yaml`. If the file already exists, replace the e
         auto_store_turns: true
         include_assistant: true
         include_user: true
+
+`BAAI/bge-small-en-v1.5` needs retrieval-aware query encoding. In the vector archive implementation, prefix **search queries only** before semantic encoding:
+
+`query_prefix = "Represent this sentence for searching relevant passages: "`
+
+Do not prefix stored memory text. Keep hash embeddings as the primary `embedding` values. Store BGE vectors in the semantic cache with `semantic_model: BAAI/bge-small-en-v1.5`. If upgrading an existing archive from MiniLM, clear only the old semantic-cache columns and lazily rebuild them with BGE; do not rewrite hash embeddings or duplicate rows.
 
 ### Action 1: Clear outdated memory from your existing setup
 
@@ -161,7 +167,7 @@ Search `~/.hermes/SOUL.md` for ANY section or paragraphs about memory architectu
     ### Vector Memory Archive (`vector_memory` tool) — THE BRAIN
     **Purpose:** Semantic recall archive. This is where **everything else** goes.
     **Schema:** `~/.hermes/vector_memory/memory.sqlite3`, table `vector_memories`. Columns: id (SHA-256 PK), content, source, session_id, platform, created_at, metadata_json, embedding (384-dim BLOB), dim, backend (`hash` or `sentence_transformers`).
-    **Backend behavior:** `smart` mode — hash search first for speed. If hash recall is weak (top score < 0.4) or empty, semantic fallback runs with sentence-transformers. Hash-backed rows are NOT duplicated; semantic fallback re-embeds stored text on demand.
+    **Backend behavior:** `smart` mode — hash search first for speed. If hash recall is weak (top score < 0.4) or empty, semantic fallback uses `BAAI/bge-small-en-v1.5`. Hash-backed rows are NOT duplicated. BGE semantic vectors are cached lazily in `semantic_embedding` with `semantic_dim` and `semantic_model`; query embeddings use BGE's retrieval prefix, stored memory text does not.
     **Hard rules (CRITICAL — these override the "structured memory feels sufficient" bias):**
     - **MANDATORY FIRST STEP:** Before answering ANY question involving people, projects, relationships, contacts, cofounders, past decisions, preferences, warm leads, follow-ups, outreach history, or "who said what" — call `vector_memory(action="search")` FIRST. This is NOT optional. Do not even think about answering from structured memory alone for these topics.
     - **Do NOT search** for static behavioral rules that are explicitly in structured memory (email style, banned words, password manager type). These are stable and always in the prompt. Only search when the answer could have changed or when structured memory doesn't have enough detail.
